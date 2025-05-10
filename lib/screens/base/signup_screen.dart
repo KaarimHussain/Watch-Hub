@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui';
+import 'package:watch_hub/components/logo.component.dart';
+import 'package:watch_hub/models/signup.model.dart';
+import 'package:watch_hub/services/auth_service.dart';
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({Key? key}) : super(key: key);
+  const SignUpScreen({super.key});
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -10,13 +13,19 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen>
     with SingleTickerProviderStateMixin {
+  // Auth
+  final AuthService _auth = AuthService();
+  // Controllers
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  // Controller Property
   bool _obscurePassword = true;
-  bool _rememberMe = false;
+  // Animations Controller
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-
+  // State Management
+  bool _isLoading = false;
   @override
   void initState() {
     super.initState();
@@ -37,6 +46,7 @@ class _SignUpScreenState extends State<SignUpScreen>
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _animationController.dispose();
@@ -46,7 +56,7 @@ class _SignUpScreenState extends State<SignUpScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color.fromARGB(255, 30, 30, 30),
       body: AnimatedBuilder(
         animation: _animationController,
         builder: (context, child) {
@@ -64,55 +74,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                         opacity: _fadeAnimation,
                         child: Column(
                           children: [
-                            // Watch logo
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: const Color(0xFF333333),
-                                  width: 2,
-                                ),
-                              ),
-                              child: Center(
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: RadialGradient(
-                                      colors: [
-                                        Color(0xFF333333),
-                                        Color(0xFF222222),
-                                      ],
-                                      stops: [0.5, 1.0],
-                                    ),
-                                  ),
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Container(
-                                        width: 1.5,
-                                        height: 16,
-                                        color: Colors.white,
-                                      ),
-                                      Transform.rotate(
-                                        angle: 1.5,
-                                        child: Container(
-                                          width: 1.5,
-                                          height: 12,
-                                          color: Colors.white,
-                                          margin: const EdgeInsets.only(
-                                            bottom: 8,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
+                            logoComponent(),
                             const SizedBox(height: 16),
                             const Text(
                               'WATCH HUB',
@@ -158,6 +120,18 @@ class _SignUpScreenState extends State<SignUpScreen>
 
                     const SizedBox(height: 40),
 
+                    // Name field
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: _buildTextField(
+                        controller: _nameController,
+                        hintText: 'Name',
+                        keyboardType: TextInputType.name,
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
                     // Email field
                     FadeTransition(
                       opacity: _fadeAnimation,
@@ -195,54 +169,12 @@ class _SignUpScreenState extends State<SignUpScreen>
 
                     const SizedBox(height: 16),
 
-                    // Remember me and forgot password
+                    // forgot password
                     FadeTransition(
                       opacity: _fadeAnimation,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          // Remember me
-                          Row(
-                            children: [
-                              SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: Checkbox(
-                                  value: _rememberMe,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _rememberMe = value ?? false;
-                                    });
-                                  },
-                                  fillColor:
-                                      MaterialStateProperty.resolveWith<Color>((
-                                        Set<MaterialState> states,
-                                      ) {
-                                        if (states.contains(
-                                          MaterialState.selected,
-                                        )) {
-                                          return Colors.white;
-                                        }
-                                        return Colors.transparent;
-                                      }),
-                                  checkColor: Colors.black,
-                                  side: const BorderSide(color: Colors.grey),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Remember me',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-
                           // Forgot password
                           TextButton(
                             onPressed: () {},
@@ -257,17 +189,14 @@ class _SignUpScreenState extends State<SignUpScreen>
 
                     const SizedBox(height: 40),
 
-                    // Sign in button
+                    // Sign up button
                     FadeTransition(
                       opacity: _fadeAnimation,
                       child: SizedBox(
                         width: double.infinity,
                         height: 56,
                         child: ElevatedButton(
-                          onPressed: () {
-                            // Navigate to home screen
-                            Navigator.pushReplacementNamed(context, '/home');
-                          },
+                          onPressed: _isLoading ? null : _handleSignUp,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: Colors.black,
@@ -276,45 +205,91 @@ class _SignUpScreenState extends State<SignUpScreen>
                             ),
                             elevation: 0,
                           ),
-                          child: const Text(
-                            'Sign Up',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          child:
+                              _isLoading
+                                  ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.black,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : const Text(
+                                    'Sign Up',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 15),
 
                     // Don't have an account
                     FadeTransition(
                       opacity: _fadeAnimation,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          const Text(
-                            'Already have an account? ',
-                            style: TextStyle(color: Colors.grey, fontSize: 14),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushReplacementNamed(context, '/login');
-                            },
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              padding: EdgeInsets.zero,
-                              minimumSize: const Size(0, 0),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          Expanded(
+                            child: Divider(
+                              thickness: 1,
+                              color: Color(0xFF999999),
                             ),
-                            child: const Text(
-                              'Login',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(width: 5),
+                          Text(
+                            "OR",
+                            style: TextStyle(
+                              color: Color(0xFF999999),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(width: 5),
+
+                          Expanded(
+                            child: Divider(
+                              thickness: 1,
+                              color: Color(0xFF999999),
                             ),
                           ),
                         ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // Navigate to home screen
+                            Navigator.pushReplacementNamed(context, '/login');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF111111),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              // border: Border.all(color: const Color(0xFF333333)),
+                              side: BorderSide(color: const Color(0xFF333333)),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Already have an Account',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
 
@@ -359,5 +334,72 @@ class _SignUpScreenState extends State<SignUpScreen>
         ),
       ),
     );
+  }
+
+  // Backend Logic
+
+  Future<void> _handleSignUp() async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
+      _showSnackBar('All fields are required');
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+      _showSnackBar('Invalid email format');
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    if (password.length < 6) {
+      _showSnackBar('Password must be at least 6 characters');
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    try {
+      SignupModel user = SignupModel(
+        name: name,
+        email: email,
+        password: password,
+        role: 'User',
+        createdAt: Timestamp.now(),
+      );
+
+      await _auth.signUp(user);
+
+      _showSnackBar('Signup successful', isError: false);
+
+      // Navigate to home screen
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    } catch (e) {
+      _showSnackBar('Failed to SignUp: ${e.toString()}');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  // Helper for showing SnackBars
+  void _showSnackBar(String message, {bool isError = true}) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: isError ? Colors.red : Colors.green,
+      duration: const Duration(seconds: 4),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

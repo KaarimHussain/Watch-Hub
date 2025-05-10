@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
+import 'package:watch_hub/components/logo.component.dart';
+import 'package:watch_hub/models/login.model.dart';
+import 'package:watch_hub/services/auth_service.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -10,12 +14,19 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
+  // Auth
+  final AuthService _auth = AuthService();
+  // Controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  // Controller Property
   bool _obscurePassword = true;
   bool _rememberMe = false;
+  // Animations Controller
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  // State Management
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -46,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color.fromARGB(255, 30, 30, 30),
       body: AnimatedBuilder(
         animation: _animationController,
         builder: (context, child) {
@@ -65,54 +76,7 @@ class _LoginScreenState extends State<LoginScreen>
                         child: Column(
                           children: [
                             // Watch logo
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: const Color(0xFF333333),
-                                  width: 2,
-                                ),
-                              ),
-                              child: Center(
-                                child: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: RadialGradient(
-                                      colors: [
-                                        Color(0xFF333333),
-                                        Color(0xFF222222),
-                                      ],
-                                      stops: [0.5, 1.0],
-                                    ),
-                                  ),
-                                  child: Stack(
-                                    alignment: Alignment.center,
-                                    children: [
-                                      Container(
-                                        width: 1.5,
-                                        height: 16,
-                                        color: Colors.white,
-                                      ),
-                                      Transform.rotate(
-                                        angle: 1.5,
-                                        child: Container(
-                                          width: 1.5,
-                                          height: 12,
-                                          color: Colors.white,
-                                          margin: const EdgeInsets.only(
-                                            bottom: 8,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
+                            logoComponent(),
                             const SizedBox(height: 16),
                             const Text(
                               'WATCH HUB',
@@ -264,10 +228,7 @@ class _LoginScreenState extends State<LoginScreen>
                         width: double.infinity,
                         height: 56,
                         child: ElevatedButton(
-                          onPressed: () {
-                            // Navigate to home screen
-                            Navigator.pushReplacementNamed(context, '/home');
-                          },
+                          onPressed: _isLoading ? null : _handleLogin,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: Colors.black,
@@ -276,48 +237,92 @@ class _LoginScreenState extends State<LoginScreen>
                             ),
                             elevation: 0,
                           ),
-                          child: const Text(
-                            'Login',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          child:
+                              _isLoading
+                                  ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.black,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                  : const Text(
+                                    'Login',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                         ),
                       ),
                     ),
-
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 15),
 
                     // Don't have an account
                     FadeTransition(
                       opacity: _fadeAnimation,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          const Text(
-                            'Don\'t have an account? ',
-                            style: TextStyle(color: Colors.grey, fontSize: 14),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushReplacementNamed(context, '/signup');
-                            },
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              padding: EdgeInsets.zero,
-                              minimumSize: const Size(0, 0),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          Expanded(
+                            child: Divider(
+                              thickness: 1,
+                              color: Color(0xFF999999),
                             ),
-                            child: const Text(
-                              'Sign Up',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(width: 5),
+                          Text(
+                            "OR",
+                            style: TextStyle(
+                              color: Color(0xFF999999),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(width: 5),
+
+                          Expanded(
+                            child: Divider(
+                              thickness: 1,
+                              color: Color(0xFF999999),
                             ),
                           ),
                         ],
                       ),
                     ),
 
+                    const SizedBox(height: 15),
+
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // Navigate to home screen
+                            Navigator.pushReplacementNamed(context, '/signup');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF111111),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              // border: Border.all(color: const Color(0xFF333333)),
+                              side: BorderSide(color: const Color(0xFF333333)),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Create an Account',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -359,5 +364,57 @@ class _LoginScreenState extends State<LoginScreen>
         ),
       ),
     );
+  }
+
+  // Backend Logic
+
+  Future<void> _handleLogin() async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      _showSnackBar('Please fill in all fields');
+      setState(() => _isLoading = false);
+      return;
+    }
+    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+      _showSnackBar('Invalid email format');
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    try {
+      LoginModel loginModel = LoginModel(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      await _auth.login(loginModel, _rememberMe);
+
+      _showSnackBar('Login successful', isError: false);
+
+      // Navigate to home screen
+      if (mounted) {
+        Navigator.popAndPushNamed(context, '/user_home');
+      }
+    } catch (e) {
+      _showSnackBar('Failed to login: ${e.toString()}');
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _showSnackBar(String message, {bool isError = true}) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: isError ? Colors.red : Colors.green,
+      duration: const Duration(seconds: 4),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }

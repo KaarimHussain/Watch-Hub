@@ -1,8 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:watch_hub/screens/admin/admin_home_screen.dart';
 import 'package:watch_hub/screens/base/login_screen.dart';
 import 'package:watch_hub/screens/base/signup_screen.dart';
 import 'package:watch_hub/screens/base/splash_screen.dart';
+import 'package:watch_hub/screens/user/user_home_screen.dart';
+import 'package:watch_hub/services/auth_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,13 +33,17 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         fontFamily: 'Inter',
+        scaffoldBackgroundColor: Colors.black,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
       ),
-      initialRoute: '/',
+      initialRoute: '/auth',
       routes: {
-        '/': (context) => const SplashScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/signup': (context) => const SignUpScreen(),
+        '/': (context) => SplashScreen(),
+        '/auth': (context) => AuthPage(),
+        '/login': (context) => LoginScreen(),
+        '/signup': (context) => SignUpScreen(),
+        '/user_home': (context) => const UserHomeScreen(),
+        '/admin_home': (context) => const AdminHomeScreen(),
       },
     );
   }

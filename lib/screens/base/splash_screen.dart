@@ -1,6 +1,8 @@
-import 'dart:math' as math;
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:watch_hub/screens/base/login_screen.dart';
+import 'dart:ui';
+
+import 'package:watch_hub/components/logo.component.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -11,259 +13,116 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _logoScaleAnimation;
-  late Animation<double> _logoRotationAnimation;
-  late Animation<double> _outerCircleAnimation;
-  late Animation<double> _middleCircleAnimation;
-  late Animation<double> _innerCircleAnimation;
-  late Animation<double> _handAnimation;
-  late Animation<double> _textOpacityAnimation;
-  late Animation<double> _textSlideAnimation;
-  late Animation<double> _progressAnimation;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
+
+    // Simple fade-in animation for the container
+    _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2500),
+      duration: const Duration(milliseconds: 1200),
     );
 
-    _logoScaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
-      ),
-    );
-
-    _logoRotationAnimation = Tween<double>(
-      begin: -math.pi / 2,
-      end: 0.0,
-    ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
-      ),
-    );
-
-    _outerCircleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.2, 0.5, curve: Curves.easeOut),
-      ),
-    );
-
-    _middleCircleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.4, 0.6, curve: Curves.easeOut),
-      ),
-    );
-
-    _innerCircleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.6, 0.8, curve: Curves.easeOut),
-      ),
-    );
-
-    _handAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.8, 1.0, curve: Curves.easeOut),
-      ),
-    );
-
-    _textOpacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.6, 0.8, curve: Curves.easeOut),
-      ),
-    );
-
-    _textSlideAnimation = Tween<double>(begin: 20.0, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.6, 0.8, curve: Curves.easeOut),
-      ),
-    );
-
-    _progressAnimation = Tween<double>(
+    _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.linear));
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
 
-    _controller.forward();
+    _fadeController.forward();
 
-    // Navigate to home screen after animation completes
-    Future.delayed(const Duration(milliseconds: 2800), () {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder:
-              (context, animation, secondaryAnimation) => const LoginScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = 0.0;
-            const end = 1.0;
-            const curve = Curves.easeInOut;
-            var tween = Tween(
-              begin: begin,
-              end: end,
-            ).chain(CurveTween(curve: curve));
-            var fadeAnimation = animation.drive(tween);
-            return FadeTransition(opacity: fadeAnimation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 500),
-        ),
-      );
+    // Navigate to login screen after 3 seconds
+    Timer(const Duration(milliseconds: 3000), () {
+      Navigator.of(context).pushReplacementNamed('/auth');
     });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Logo with concentric circles
-                ScaleTransition(
-                  scale: _logoScaleAnimation,
-                  child: SizedBox(
-                    width: 128,
-                    height: 128,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Outer circle with progress indicator
-                        CustomPaint(
-                          size: const Size(128, 128),
-                          painter: ProgressArcPainter(
-                            progress: _progressAnimation.value,
-                            color: Colors.white,
-                          ),
-                        ),
+      body: Stack(
+        children: [
+          // Black and white gradient background
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF000000),
+                  Color(0xFF333333),
+                  Color(0xFF000000),
+                ],
+                stops: [0.0, 0.5, 1.0],
+              ),
+            ),
+          ),
 
-                        // Outer circle
-                        Transform.rotate(
-                          angle: _logoRotationAnimation.value,
-                          child: Opacity(
-                            opacity: _outerCircleAnimation.value,
-                            child: Container(
-                              width: 128,
-                              height: 128,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: const Color(0xFF333333),
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+          // Decorative pattern overlay
+          Opacity(
+            opacity: 0.05,
+            child: CustomPaint(painter: PatternPainter(), size: Size.infinite),
+          ),
 
-                        // Middle circle
-                        Opacity(
-                          opacity: _middleCircleAnimation.value,
-                          child: Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: const Color(0xFF444444),
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        // Inner circle
-                        Opacity(
-                          opacity: _innerCircleAnimation.value,
-                          child: Container(
-                            width: 72,
-                            height: 72,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: const Color(0xFF555555),
-                                width: 1,
-                              ),
-                              gradient: const RadialGradient(
-                                colors: [Color(0xFF333333), Color(0xFF222222)],
-                                stops: [0.5, 1.0],
-                              ),
-                            ),
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                // Hour hand
-                                Opacity(
-                                  opacity: _handAnimation.value,
-                                  child: Container(
-                                    width: 2,
-                                    height: 24,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                // Minute hand
-                                Opacity(
-                                  opacity: _handAnimation.value,
-                                  child: Transform.rotate(
-                                    angle: math.pi / 2,
-                                    child: Container(
-                                      width: 2,
-                                      height: 32,
-                                      color: Colors.white,
-                                      margin: const EdgeInsets.only(right: 8),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+          // Centered content with backdrop filter
+          Center(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    width: 280,
+                    height: 280,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 20,
+                          spreadRadius: 5,
                         ),
                       ],
                     ),
-                  ),
-                ),
-
-                const SizedBox(height: 32),
-
-                // Brand name and tagline
-                Opacity(
-                  opacity: _textOpacityAnimation.value,
-                  child: Transform.translate(
-                    offset: Offset(0, _textSlideAnimation.value),
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        logoComponent(height: 120, width: 120),
+                        const SizedBox(height: 24),
+
+                        // App name
                         const Text(
                           'WATCH HUB',
                           style: TextStyle(
-                            fontFamily: 'Cal_Sans',
                             color: Colors.white,
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 8,
+                            letterSpacing: 4,
                           ),
                         ),
+
                         const SizedBox(height: 8),
-                        const Text(
+
+                        // Tagline
+                        Text(
                           'PRECISION TIMEPIECES',
                           style: TextStyle(
-                            color: Color(0xFF666666),
+                            color: Colors.white.withOpacity(0.7),
                             fontSize: 12,
                             letterSpacing: 2,
                           ),
@@ -272,48 +131,52 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                 ),
-              ],
-            );
-          },
-        ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-// Custom painter for the circular progress indicator
-class ProgressArcPainter extends CustomPainter {
-  final double progress;
-  final Color color;
-
-  ProgressArcPainter({required this.progress, required this.color});
-
+// Custom painter for subtle pattern overlay
+class PatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromCircle(
-      center: Offset(size.width / 2, size.height / 2),
-      radius: size.width / 2,
-    );
-
     final paint =
         Paint()
-          ..color = color
+          ..color = Colors.white
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.0
-          ..strokeCap = StrokeCap.round;
+          ..strokeWidth = 0.5;
 
-    // Draw the progress arc
-    canvas.drawArc(
-      rect,
-      -math.pi / 2, // Start from the top
-      2 * math.pi * progress, // Draw based on progress
-      false,
-      paint,
-    );
+    // Draw grid pattern
+    for (int i = 0; i < size.width; i += 20) {
+      // Vertical lines
+      canvas.drawLine(
+        Offset(i.toDouble(), 0),
+        Offset(i.toDouble(), size.height),
+        paint,
+      );
+    }
+
+    for (int i = 0; i < size.height; i += 20) {
+      // Horizontal lines
+      canvas.drawLine(
+        Offset(0, i.toDouble()),
+        Offset(size.width, i.toDouble()),
+        paint,
+      );
+    }
+
+    // Draw some diagonal lines for added texture
+    for (int i = 0; i < size.width + size.height; i += 40) {
+      canvas.drawLine(Offset(0, i.toDouble()), Offset(i.toDouble(), 0), paint);
+    }
   }
 
   @override
-  bool shouldRepaint(covariant ProgressArcPainter oldDelegate) {
-    return oldDelegate.progress != progress || oldDelegate.color != color;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }
