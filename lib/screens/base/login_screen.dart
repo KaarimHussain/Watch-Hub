@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
@@ -53,6 +54,8 @@ class _LoginScreenState extends State<LoginScreen>
     _animationController.dispose();
     super.dispose();
   }
+
+  // Canvas
 
   @override
   Widget build(BuildContext context) {
@@ -334,6 +337,8 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  // Building UI
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
@@ -388,33 +393,66 @@ class _LoginScreenState extends State<LoginScreen>
       setState(() => _isLoading = false);
       return;
     }
-
+    LoginModel loginModel = LoginModel(
+      email: _emailController.text,
+      password: _passwordController.text,
+    );
     try {
-      LoginModel loginModel = LoginModel(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-
-      await _auth.login(loginModel, _rememberMe);
-
-      _showSnackBar('Login successful', isError: false);
-
-      // Navigate to home screen
-      if (mounted) {
-        Navigator.popAndPushNamed(context, '/user_home');
+      // Check if it's admin login
+      debugPrint("Checking admin login");
+      debugPrint("Email: ${loginModel.email}");
+      debugPrint("Password: ${loginModel.password}");
+      if (loginModel.email == 'admin@watchhub.com' &&
+          loginModel.password == 'admin123') {
+        await _auth.adminLogin(loginModel, _rememberMe);
+        debugPrint("Admin login successful");
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/admin_home');
+        }
+      } else {
+        final User? user = await _auth.login(loginModel, _rememberMe);
+        debugPrint("User login successful");
+        if (user != null) {
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, '/user_home');
+          }
+        }
       }
-    } catch (e) {
-      _showSnackBar('Failed to login: ${e.toString()}');
+    } on FirebaseAuthException catch (e) {
+      final errorMessage = _getFriendlyError(e.code);
+      _showSnackBar(errorMessage);
       setState(() => _isLoading = false);
     }
   }
 
+  // Error Handling
+
   void _showSnackBar(String message, {bool isError = true}) {
     final snackBar = SnackBar(
       content: Text(message),
-      backgroundColor: isError ? Colors.red : Colors.green,
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: isError ? Colors.red[400] : Colors.green[400],
       duration: const Duration(seconds: 4),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  String _getFriendlyError(String errorCode) {
+    switch (errorCode) {
+      case 'invalid-email':
+        return 'The email address is badly formatted.';
+      case 'user-disabled':
+        return 'This user account has been disabled.';
+      case 'user-not-found':
+        return 'No account found with this email.';
+      case 'wrong-password':
+        return 'Incorrect password. Please try again.';
+      case 'too-many-requests':
+        return 'Too many login attempts. Try again later.';
+      case 'network-request-failed':
+        return 'No internet connection. Please check your network.';
+      default:
+        return 'Login failed. Please check your credentials.';
+    }
   }
 }

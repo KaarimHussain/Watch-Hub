@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:watch_hub/models/login.model.dart';
 import 'package:watch_hub/models/signup.model.dart';
@@ -38,6 +39,7 @@ class AuthService {
 
   // Login
   Future<User?> login(LoginModel loginModel, bool rememberMe) async {
+    debugPrint("Login Model: $loginModel");
     try {
       await _auth.setPersistence(
         rememberMe ? Persistence.LOCAL : Persistence.SESSION,
@@ -54,16 +56,43 @@ class AuthService {
 
       return userCredential.user;
     } catch (e) {
-      print("Login Error: $e");
+      debugPrint("Login Error: $e");
       rethrow;
     }
   }
 
-  // Logout
+  Future<User?> adminLogin(LoginModel loginModel, bool rememberMe) async {
+    try {
+      await _auth.setPersistence(
+        rememberMe ? Persistence.LOCAL : Persistence.SESSION,
+      );
+      debugPrint("Admin Login Model: $loginModel");
+      // Fixed admin credentials
+      const String adminEmail = 'admin@watchhub.com';
+      const String adminPassword = 'admin123';
+
+      if (loginModel.email == adminEmail &&
+          loginModel.password == adminPassword) {
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('rememberMe', rememberMe);
+        await prefs.setBool('isAdmin', true);
+
+        debugPrint("Admin Credentials Matched");
+      } else {
+        throw Exception('Invalid admin credentials');
+      }
+    } catch (e) {
+      debugPrint("Admin Login Error: $e");
+      rethrow;
+    }
+    return null;
+  }
+
   Future<void> logout() async {
     await _auth.signOut();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('rememberMe');
+    await prefs.remove('isAdmin');
   }
 
   // Get current user

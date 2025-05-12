@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:watch_hub/components/logo.component.dart';
 import 'package:watch_hub/models/signup.model.dart';
@@ -200,6 +201,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: Colors.black,
+                            disabledBackgroundColor: Colors.grey,
+                            disabledForegroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -275,6 +278,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFF111111),
                             foregroundColor: Colors.white,
+                            disabledBackgroundColor: Color(0xFF333333),
+                            disabledForegroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               // border: Border.all(color: const Color(0xFF333333)),
                               side: BorderSide(color: const Color(0xFF333333)),
@@ -383,23 +388,43 @@ class _SignUpScreenState extends State<SignUpScreen>
       // Navigate to home screen
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/login');
+        return;
       }
-    } catch (e) {
-      _showSnackBar('Failed to SignUp: ${e.toString()}');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+    } on FirebaseAuthException catch (e) {
+      final errorMessage = _getFriendlyError(e.code);
+      _showSnackBar(errorMessage);
+      setState(() => _isLoading = false);
     }
   }
 
-  // Helper for showing SnackBars
+  // Error Handling
+
   void _showSnackBar(String message, {bool isError = true}) {
     final snackBar = SnackBar(
       content: Text(message),
-      backgroundColor: isError ? Colors.red : Colors.green,
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: isError ? Colors.red[400] : Colors.green[400],
       duration: const Duration(seconds: 4),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  String _getFriendlyError(String errorCode) {
+    switch (errorCode) {
+      case 'invalid-email':
+        return 'The email address is badly formatted.';
+      case 'user-disabled':
+        return 'This user account has been disabled.';
+      case 'user-not-found':
+        return 'No account found with this email.';
+      case 'wrong-password':
+        return 'Incorrect password. Please try again.';
+      case 'too-many-requests':
+        return 'Too many signup attempts. Try again later.';
+      case 'network-request-failed':
+        return 'No internet connection. Please check your network.';
+      default:
+        return 'Signup failed. Please check your credentials.';
+    }
   }
 }

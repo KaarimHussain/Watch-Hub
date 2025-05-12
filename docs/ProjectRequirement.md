@@ -18,40 +18,49 @@ WatchHub is a mobile application designed to simplify and enhance the experience
 ## ✅ Functional Requirements
 
 ### 1. User Authentication
+
 - Secure login/logout and sign-up system.
 - Password recovery functionality.
 
 ### 2. Browse Watches
+
 - Browse catalog by brands, types, and price.
 - Sort and filter options (price, popularity, brand).
 - Search functionality for quick access.
 
 ### 3. Product Details
+
 - View detailed watch info: images, specs, prices.
 - Zoomable high-quality images.
 - Show availability and stock status.
 
 ### 4. Shopping Cart
+
 - Add, remove, and update watch quantities.
 - Auto-calculate and display total price.
 
 ### 5. User Profiles
+
 - Edit personal details and shipping addresses.
 - View order history and track order status.
 
 ### 6. Wishlist
+
 - Save items for later.
 - Move wishlist items to cart.
 
 ### 7. Reviews and Ratings
+
 - Users can leave reviews and rate products.
 - Sort and filter reviews by date/helpfulness.
 
 ### 8. Customer Support
+
 - In-app chat or contact form.
 - FAQ section available for self-help.
 
 ### 9. Admin Panel
+
 - Admin dashboard to manage:
   - Products
   - Users
@@ -59,6 +68,7 @@ WatchHub is a mobile application designed to simplify and enhance the experience
   - Reviews
 
 ### 10. Feedback and Reporting
+
 - Users can submit feedback or report issues in-app.
 
 ---
