@@ -53,10 +53,10 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCvg1_WWShLO09l-fMG9nQg5333YQIDl1k',
-    appId: '1:883631800883:android:e27cdf595a623674c29946',
-    messagingSenderId: '883631800883',
-    projectId: 'watch-hub-1f030',
-    storageBucket: 'watch-hub-1f030.firebasestorage.app',
+    apiKey: 'YOUR_FIREBASE_API_KEY',
+    appId: 'YOUR_FIREBASE_APP_ID',
+    messagingSenderId: 'YOUR_FIREBASE_MESSAGING_SENDER_ID',
+    projectId: 'YOUR_PROJECT_ID',
+    storageBucket: 'YOUR_STORAGE_BUCKET',
   );
 }
