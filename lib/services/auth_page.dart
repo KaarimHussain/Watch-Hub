@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:watch_hub/screens/admin/admin_home_screen.dart';
 import 'package:watch_hub/screens/base/login_screen.dart';
-import 'package:watch_hub/screens/user/user_home_screen.dart';
+import 'package:watch_hub/screens/user/index_screen.dart';
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
@@ -88,7 +88,7 @@ class _AuthPageState extends State<AuthPage> {
               'email': _user!.email,
             }, SetOptions(merge: true));
             debugPrint("Created new user document in Firestore");
-            return const UserHomeScreen();
+            return const IndexScreen();
           }
 
           final String role = doc.get('role');
@@ -96,7 +96,7 @@ class _AuthPageState extends State<AuthPage> {
           if (role == 'Admin') {
             return const AdminHomeScreen();
           } else {
-            return const UserHomeScreen();
+            return const IndexScreen();
           }
         }
 

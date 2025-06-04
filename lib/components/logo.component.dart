@@ -1,136 +1,161 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 
-Widget logoComponent({int height = 60, int width = 60}) {
-  return Container(
-    width: width.toDouble(),
-    height: height.toDouble(),
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      border: Border.all(color: const Color(0xFF333333), width: 2),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.3),
-          blurRadius: 8,
-          spreadRadius: 1,
+Widget logoComponent({double height = 60, double width = 60}) {
+  // Ensure the logo is a perfect circle by using the smaller dimension
+  final size = min(height, width);
+
+  // Calculate proportional sizes for elements
+  final outerCircleSize = size;
+  final innerCircleSize = size * 0.85;
+  final centerDotSize = size * 0.08;
+  final hourHandLength = size * 0.3;
+  final hourHandWidth = size * 0.04;
+  final minuteHandLength = size * 0.4;
+  final minuteHandWidth = size * 0.025;
+
+  // Modern dark color palette
+  final backgroundColor = const Color(0xFF1A1A1A); // Dark background
+  final primaryColor = const Color(0xFFE0E0E0); // Light gray for contrast
+  final accentColor = Colors.transparent;
+
+  return SizedBox(
+    width: size,
+    height: size,
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        // Outer circle with subtle glow
+        Container(
+          width: outerCircleSize,
+          height: outerCircleSize,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: backgroundColor,
+            boxShadow: [
+              BoxShadow(
+                color: accentColor.withOpacity(0.15),
+                blurRadius: size * 0.1,
+                spreadRadius: size * 0.01,
+              ),
+            ],
+          ),
+        ),
+
+        // Inner circle (watch face)
+        Container(
+          width: innerCircleSize,
+          height: innerCircleSize,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: backgroundColor,
+            border: Border.all(
+              color: primaryColor.withOpacity(0.7),
+              width: size * 0.02,
+            ),
+          ),
+        ),
+
+        // Minimal hour markers (just at 12, 3, 6, 9)
+        ...List.generate(4, (index) {
+          final angle = (index * 90) * (pi / 180); // Convert to radians
+          final markerDistance = innerCircleSize * 0.38;
+          final markerSize = size * 0.06;
+
+          return Transform(
+            alignment: Alignment.center,
+            transform:
+                Matrix4.identity()..translate(
+                  markerDistance * sin(angle),
+                  -markerDistance * cos(angle),
+                ),
+            child: Container(
+              width: markerSize,
+              height: markerSize,
+              decoration: BoxDecoration(
+                color: primaryColor,
+                shape: BoxShape.circle,
+              ),
+            ),
+          );
+        }),
+
+        // Hour hand (shorter)
+        Transform.rotate(
+          angle: 0.5, // Positioned at around 2 o'clock
+          child: Container(
+            width: hourHandWidth,
+            height: hourHandLength,
+            decoration: BoxDecoration(
+              color: primaryColor,
+              borderRadius: BorderRadius.circular(hourHandWidth * 0.5),
+            ),
+            margin: EdgeInsets.only(bottom: hourHandLength),
+          ),
+        ),
+
+        // Minute hand (longer)
+        Transform.rotate(
+          angle: 2.0, // Positioned at around 7 o'clock
+          child: Container(
+            width: minuteHandWidth,
+            height: minuteHandLength,
+            decoration: BoxDecoration(
+              color: primaryColor,
+              borderRadius: BorderRadius.circular(minuteHandWidth * 0.5),
+            ),
+            margin: EdgeInsets.only(bottom: minuteHandLength),
+          ),
+        ),
+
+        // Accent element (glowing blue circle)
+        Container(
+          width: size * 0.15,
+          height: size * 0.15,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: accentColor,
+            boxShadow: [
+              BoxShadow(
+                color: accentColor.withOpacity(0.4),
+                blurRadius: size * 0.05,
+                spreadRadius: size * 0.01,
+              ),
+            ],
+          ),
+          margin: EdgeInsets.only(bottom: size * 0.3),
+        ),
+
+        // Center cap
+        Container(
+          width: centerDotSize,
+          height: centerDotSize,
+          decoration: BoxDecoration(
+            color: accentColor,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: accentColor.withOpacity(0.3),
+                blurRadius: size * 0.03,
+                spreadRadius: size * 0.01,
+              ),
+            ],
+          ),
+        ),
+
+        // Minimal brand indicator
+        Positioned(
+          bottom: size * 0.25,
+          child: Text(
+            "W",
+            style: TextStyle(
+              color: primaryColor,
+              fontSize: size * 0.12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ],
-    ),
-    child: Center(
-      child: Container(
-        width: width * 0.6,
-        height: height * 0.6,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: const RadialGradient(
-            colors: [Color(0xFF333333), Color(0xFF222222)],
-            stops: [0.5, 1.0],
-          ),
-          border: Border.all(color: const Color(0xFF444444), width: 1),
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Clock face with hour markers
-            ...List.generate(12, (index) {
-              final angle =
-                  (index * 30) * (3.14159 / 180); // Convert to radians
-              final isMainMarker = index % 3 == 0; // 12, 3, 6, 9 positions
-              final markerHeight = isMainMarker ? 4.0 : 2.0;
-              final markerWidth = isMainMarker ? 1.5 : 1.0;
-              final distance = 22.0; // Distance from center
-
-              return Transform(
-                alignment: Alignment.center,
-                transform:
-                    Matrix4.identity()..translate(
-                      distance * sin(angle),
-                      -distance * cos(angle),
-                    ),
-                child: Container(
-                  width: markerWidth,
-                  height: markerHeight,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(isMainMarker ? 1.0 : 0.7),
-                    borderRadius: BorderRadius.circular(1),
-                  ),
-                ),
-              );
-            }),
-
-            // Hour hand (shorter, thicker)
-            Transform.rotate(
-              angle: 0.5, // Positioned at around 2 o'clock
-              child: Container(
-                width: 2.5,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(1.5),
-                ),
-                margin: const EdgeInsets.only(bottom: 10),
-              ),
-            ),
-
-            // Minute hand (longer, thinner)
-            Transform.rotate(
-              angle: 2.0, // Positioned at around 7 o'clock
-              child: Container(
-                width: 1.5,
-                height: 18,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(1),
-                ),
-                margin: const EdgeInsets.only(bottom: 10),
-              ),
-            ),
-
-            // Second hand (thin with red accent)
-            Transform.rotate(
-              angle: 4.2, // Positioned at around 4 o'clock
-              child: Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  Container(
-                    width: 1.0,
-                    height: 20,
-                    color: Colors.red.shade400,
-                    margin: const EdgeInsets.only(bottom: 10),
-                  ),
-                  Container(
-                    width: 3.0,
-                    height: 3.0,
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade400,
-                      borderRadius: BorderRadius.circular(1.5),
-                    ),
-                    margin: const EdgeInsets.only(top: 17),
-                  ),
-                ],
-              ),
-            ),
-
-            // Center dot where hands meet
-            Container(
-              width: 4,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
-                    blurRadius: 1,
-                    spreadRadius: 0.5,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     ),
   );
 }

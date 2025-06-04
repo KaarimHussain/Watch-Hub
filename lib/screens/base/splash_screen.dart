@@ -23,34 +23,31 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            logoComponent(height: 120, width: 120),
-            const SizedBox(height: 50),
-            Text(
-              "WATCH HUB",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2,
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              logoComponent(height: 120, width: 120),
+              const SizedBox(height: 50),
+              Text(
+                "WATCH HUB",
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            // Tagline
-            Text(
-              'PRECISION TIMEPIECES',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                letterSpacing: 2,
+              const SizedBox(height: 10),
+              // Tagline
+              Text(
+                'PRECISION TIMEPIECES',
+                style: theme.textTheme.bodySmall?.copyWith(letterSpacing: 2),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

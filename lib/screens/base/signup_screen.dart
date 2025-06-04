@@ -2,8 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:watch_hub/components/logo.component.dart';
+import 'package:watch_hub/components/snackbar.component.dart';
+import 'package:watch_hub/models/recent_activity.model.dart';
 import 'package:watch_hub/models/signup.model.dart';
 import 'package:watch_hub/services/auth_service.dart';
+import 'package:watch_hub/services/recent_activity_service.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -14,8 +17,9 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen>
     with SingleTickerProviderStateMixin {
-  // Auth
+  // Services
   final AuthService _auth = AuthService();
+  final RecentActivityService _recentActivityService = RecentActivityService();
   // Controllers
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -27,6 +31,7 @@ class _SignUpScreenState extends State<SignUpScreen>
   late Animation<double> _fadeAnimation;
   // State Management
   bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -56,255 +61,183 @@ class _SignUpScreenState extends State<SignUpScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 30, 30, 30),
-      body: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 40),
-                    // Logo and brand
-                    Center(
-                      child: FadeTransition(
+      body: SafeArea(
+        child: AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            return SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 40),
+                      Center(
+                        child: FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: Column(
+                            children: [
+                              logoComponent(),
+                              const SizedBox(height: 16),
+                              Text(
+                                'WATCH HUB',
+                                style: textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 6,
+                                  color: colorScheme.onBackground,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 60),
+                      FadeTransition(
                         opacity: _fadeAnimation,
-                        child: Column(
+                        child: Text(
+                          'Create an Account',
+                          style: textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onBackground,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Text(
+                          'Signup to watch timepieces',
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: theme.hintColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: _buildTextField(
+                          controller: _nameController,
+                          hintText: 'Name',
+                          keyboardType: TextInputType.name,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: _buildTextField(
+                          controller: _emailController,
+                          hintText: 'Email',
+                          keyboardType: TextInputType.emailAddress,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: _buildTextField(
+                          controller: _passwordController,
+                          hintText: 'Password',
+                          obscureText: _obscurePassword,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              color: theme.iconTheme.color,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                      // Sign in button
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _handleSignUp,
+                            child:
+                                _isLoading
+                                    ? const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                    : const Text(
+                                      'Sign Up',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      // OR divider
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            logoComponent(),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'WATCH HUB',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
+                            Expanded(child: Divider(thickness: 1)),
+                            const SizedBox(width: 5),
+                            Text(
+                              "OR",
+                              style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                letterSpacing: 6,
                               ),
                             ),
+                            const SizedBox(width: 5),
+                            Expanded(child: Divider(thickness: 1)),
                           ],
                         ),
                       ),
-                    ),
 
-                    const SizedBox(height: 60),
+                      const SizedBox(height: 15),
 
-                    // Welcome text
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: const Text(
-                        'Create an Account',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: const Text(
-                        'Signup to watch timepieces',
-                        style: TextStyle(
-                          color: Color(0xFF999999),
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    // Name field
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: _buildTextField(
-                        controller: _nameController,
-                        hintText: 'Name',
-                        keyboardType: TextInputType.name,
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Email field
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: _buildTextField(
-                        controller: _emailController,
-                        hintText: 'Email',
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Password field
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: _buildTextField(
-                        controller: _passwordController,
-                        hintText: 'Password',
-                        obscureText: _obscurePassword,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                            color: Colors.grey,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // forgot password
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          // Forgot password
-                          TextButton(
-                            onPressed: () {},
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text('Forgot Password?'),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    // Sign up button
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _handleSignUp,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
-                            disabledBackgroundColor: Colors.grey,
-                            disabledForegroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
-                          ),
-                          child:
-                              _isLoading
-                                  ? const SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.black,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                  : const Text(
-                                    'Sign Up',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    // Don't have an account
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Expanded(
-                            child: Divider(
-                              thickness: 1,
-                              color: Color(0xFF999999),
-                            ),
-                          ),
-                          SizedBox(width: 5),
-                          Text(
-                            "OR",
-                            style: TextStyle(
-                              color: Color(0xFF999999),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(width: 5),
-
-                          Expanded(
-                            child: Divider(
-                              thickness: 1,
-                              color: Color(0xFF999999),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Navigate to home screen
-                            Navigator.pushReplacementNamed(context, '/login');
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF111111),
-                            foregroundColor: Colors.white,
-                            disabledBackgroundColor: Color(0xFF333333),
-                            disabledForegroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              // border: Border.all(color: const Color(0xFF333333)),
-                              side: BorderSide(color: const Color(0xFF333333)),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: const Text(
-                            'Already have an Account',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(context, '/login');
+                            },
+                            child: const Text(
+                              'Already have an account?',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-
-                    const SizedBox(height: 20),
-                  ],
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -316,31 +249,14 @@ class _SignUpScreenState extends State<SignUpScreen>
     bool obscureText = false,
     Widget? suffixIcon,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF111111),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF333333)),
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        keyboardType: keyboardType,
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: TextStyle(color: Colors.grey.shade600),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
-          ),
-          suffixIcon: suffixIcon,
-        ),
-      ),
+    // Use the theme from context
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(hintText: hintText, suffixIcon: suffixIcon),
     );
   }
-
   // Backend Logic
 
   Future<void> _handleSignUp() async {
@@ -379,12 +295,26 @@ class _SignUpScreenState extends State<SignUpScreen>
         password: password,
         role: 'User',
         createdAt: Timestamp.now(),
+        verified: false,
       );
 
       await _auth.signUp(user);
 
-      _showSnackBar('Signup successful', isError: false);
+      // Send email verification
+      User? firebaseUser = FirebaseAuth.instance.currentUser;
+      await firebaseUser?.sendEmailVerification();
 
+      showSnackBar(
+        context,
+        "Please verify your email to complete the registration, check your email for the verification link",
+        type: SnackBarType.info,
+      );
+      sendRecentActivity(
+        "User",
+        "New User Added",
+        "Welcome! ${name.toUpperCase()}",
+        DateTime.now(),
+      );
       // Navigate to home screen
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/login');
@@ -426,5 +356,20 @@ class _SignUpScreenState extends State<SignUpScreen>
       default:
         return 'Signup failed. Please check your credentials.';
     }
+  }
+
+  void sendRecentActivity(
+    String type,
+    String title,
+    String description,
+    DateTime timestamp,
+  ) {
+    RecentActivity userActivity = RecentActivity(
+      type: type,
+      title: title,
+      description: description,
+      timestamp: timestamp,
+    );
+    _recentActivityService.addRecentActivity(userActivity);
   }
 }

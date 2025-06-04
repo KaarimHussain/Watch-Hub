@@ -40,7 +40,16 @@ dependencies:
   firebase_auth: ^5.5.3
   image_picker: ^1.1.2
   shared_preferences: ^2.5.3
-
+  carousel_slider: ^5.0.0
+  photo_view: ^0.15.0
+  shimmer: ^2.0.0
+  firebase_storage: ^12.4.5
+  connectivity_plus: ^6.1.4
+  flutter_image_compress: ^2.4.0
+  intl: ^0.20.2
+  timeline_tile: ^2.0.0
+  image: ^4.5.4
+  
 dev_dependencies:
   flutter_launcher_icons: ^0.14.3
   flutter_test:
@@ -109,3 +118,6 @@ flutter:
     - family: Cal_Sans
       fonts:
         - asset: assets/fonts/Cal_Sans/CalSans-Regular.ttf
+    - family: Lobster
+      fonts:
+        - asset: assets/fonts/Lobster/Lobster-Regular.ttf

@@ -17,59 +17,59 @@ WatchHub is a mobile application designed to simplify and enhance the experience
 
 ## ✅ Functional Requirements
 
-### 1. User Authentication
+### 1. User Authentication ✅
 
-- Secure login/logout and sign-up system.
-- Password recovery functionality.
+- Secure login/logout and sign-up system. - Done
+- Password recovery functionality. - Done
 
-### 2. Browse Watches
+### 2. Browse Watches ✅
 
-- Browse catalog by brands, types, and price.
-- Sort and filter options (price, popularity, brand).
-- Search functionality for quick access.
+- Browse catalog by brands, types, and price. - Done
+- Sort and filter options (price, popularity, brand). - Done
+- Search functionality for quick access. - Done
 
-### 3. Product Details
+### 3. Product Details ✅
 
-- View detailed watch info: images, specs, prices.
-- Zoomable high-quality images.
-- Show availability and stock status.
+- View detailed watch info: images, specs, prices. - Done
+- Zoomable high-quality images. - Done
+- Show availability and stock status. - Done
 
-### 4. Shopping Cart
+### 4. Shopping Cart ✅
 
-- Add, remove, and update watch quantities.
-- Auto-calculate and display total price.
+- Add, remove, and update watch quantities. - Done
+- Auto-calculate and display total price. - Done
 
 ### 5. User Profiles
 
-- Edit personal details and shipping addresses.
+- Edit personal details and shipping addresses. - Done
 - View order history and track order status.
 
-### 6. Wishlist
+### 6. Wishlist ✅
 
-- Save items for later.
-- Move wishlist items to cart.
+- Save items for later. - Done
+- Move wishlist items to cart. - Done
 
-### 7. Reviews and Ratings
+### 7. Reviews and Ratings ✅
 
-- Users can leave reviews and rate products.
-- Sort and filter reviews by date/helpfulness.
+- Users can leave reviews and rate products. - Done
+- Sort and filter reviews by date/helpfulness. - Done
 
-### 8. Customer Support
+### 8. Customer Support ✅
 
-- In-app chat or contact form.
-- FAQ section available for self-help.
+- In-app chat or contact form. - Done
+- FAQ section available for self-help. - Done
 
 ### 9. Admin Panel
 
 - Admin dashboard to manage:
-  - Products
-  - Users
+  - Products - Done
+  - Users - Done
   - Orders
-  - Reviews
+  - Reviews - Done
 
-### 10. Feedback and Reporting
+### 10. Feedback and Reporting ✅
 
-- Users can submit feedback or report issues in-app.
+- Users can submit feedback or report issues in-app. - Done
 
 ---
 

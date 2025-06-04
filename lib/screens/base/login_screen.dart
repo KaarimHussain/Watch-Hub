@@ -1,13 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'dart:ui';
 
 import 'package:watch_hub/components/logo.component.dart';
+import 'package:watch_hub/components/snackbar.component.dart';
 import 'package:watch_hub/models/login.model.dart';
+import 'package:watch_hub/screens/base/forget_password_screen.dart';
 import 'package:watch_hub/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -59,280 +60,239 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Get theme colors
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 30, 30, 30),
-      body: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 40),
-                    // Logo and brand
-                    Center(
-                      child: FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: Column(
-                          children: [
-                            // Watch logo
-                            logoComponent(),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'WATCH HUB',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 6,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 60),
-
-                    // Welcome text
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: const Text(
-                        'Welcome back',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: const Text(
-                        'Login to continue',
-                        style: TextStyle(
-                          color: Color(0xFF999999),
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 40),
-
-                    // Email field
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: _buildTextField(
-                        controller: _emailController,
-                        hintText: 'Email',
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    // Password field
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: _buildTextField(
-                        controller: _passwordController,
-                        hintText: 'Password',
-                        obscureText: _obscurePassword,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
-                            color: Colors.grey,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Remember me and forgot password
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Remember me
-                          Row(
+      body: SafeArea(
+        child: AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            return SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 40),
+                      // Logo and brand
+                      Center(
+                        child: FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: Column(
                             children: [
-                              SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: Checkbox(
-                                  value: _rememberMe,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _rememberMe = value ?? false;
-                                    });
-                                  },
-                                  fillColor:
-                                      MaterialStateProperty.resolveWith<Color>((
-                                        Set<MaterialState> states,
-                                      ) {
-                                        if (states.contains(
-                                          MaterialState.selected,
-                                        )) {
-                                          return Colors.white;
-                                        }
-                                        return Colors.transparent;
-                                      }),
-                                  checkColor: Colors.black,
-                                  side: const BorderSide(color: Colors.grey),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Remember me',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
+                              // Watch logo
+                              logoComponent(),
+                              const SizedBox(height: 16),
+                              Text(
+                                'WATCH HUB',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 6,
                                 ),
                               ),
                             ],
                           ),
-
-                          // Forgot password
-                          TextButton(
-                            onPressed: () {},
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text('Forgot Password?'),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
 
-                    const SizedBox(height: 40),
+                      const SizedBox(height: 60),
 
-                    // Sign in button
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _handleLogin,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
+                      // Welcome text
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Text(
+                          'Welcome back',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
-                          child:
-                              _isLoading
-                                  ? const SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.black,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                  : const Text(
-                                    'Login',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Text(
+                          'Login to continue',
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      // Email field
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: _buildTextField(
+                          controller: _emailController,
+                          hintText: 'Email',
+                          keyboardType: TextInputType.emailAddress,
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Password field
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: _buildTextField(
+                          controller: _passwordController,
+                          hintText: 'Password',
+                          obscureText: _obscurePassword,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                              color: theme.iconTheme.color,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Remember me and forgot password
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Remember me
+                            Row(
+                              children: [
+                                SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: Checkbox(
+                                    value: _rememberMe,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _rememberMe = value ?? false;
+                                      });
+                                    },
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Remember me',
+                                  style: theme.textTheme.bodyMedium,
+                                ),
+                              ],
+                            ),
+
+                            // Forgot password
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) =>
+                                            const ForgotPasswordScreen(),
+                                  ),
+                                );
+                              },
+                              child: const Text('Forgot Password?'),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 15),
 
-                    // Don't have an account
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Expanded(
-                            child: Divider(
-                              thickness: 1,
-                              color: Color(0xFF999999),
-                            ),
-                          ),
-                          SizedBox(width: 5),
-                          Text(
-                            "OR",
-                            style: TextStyle(
-                              color: Color(0xFF999999),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(width: 5),
+                      const SizedBox(height: 40),
 
-                          Expanded(
-                            child: Divider(
-                              thickness: 1,
-                              color: Color(0xFF999999),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Navigate to home screen
-                            Navigator.pushReplacementNamed(context, '/signup');
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF111111),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              // border: Border.all(color: const Color(0xFF333333)),
-                              side: BorderSide(color: const Color(0xFF333333)),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: const Text(
-                            'Create an Account',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                      // Sign in button
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _handleLogin,
+                            child:
+                                _isLoading
+                                    ? const SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                    : const Text(
+                                      'Login',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
+                      const SizedBox(height: 15),
+
+                      // OR divider
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Expanded(child: Divider(thickness: 1)),
+                            const SizedBox(width: 5),
+                            Text(
+                              "OR",
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Expanded(child: Divider(thickness: 1)),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 15),
+
+                      // Create account button
+                      FadeTransition(
+                        opacity: _fadeAnimation,
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(
+                                context,
+                                '/signup',
+                              );
+                            },
+                            child: const Text(
+                              'Create an Account',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -346,28 +306,12 @@ class _LoginScreenState extends State<LoginScreen>
     bool obscureText = false,
     Widget? suffixIcon,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF111111),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF333333)),
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        keyboardType: keyboardType,
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: TextStyle(color: Colors.grey.shade600),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
-          ),
-          suffixIcon: suffixIcon,
-        ),
-      ),
+    // Use the theme from context
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(hintText: hintText, suffixIcon: suffixIcon),
     );
   }
 
@@ -376,52 +320,60 @@ class _LoginScreenState extends State<LoginScreen>
   Future<void> _handleLogin() async {
     if (_isLoading) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
-    final email = _emailController.text.trim();
-    final password = _passwordController.text;
-
-    if (email.isEmpty || password.isEmpty) {
-      _showSnackBar('Please fill in all fields');
-      setState(() => _isLoading = false);
-      return;
-    }
-    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
-      _showSnackBar('Invalid email format');
-      setState(() => _isLoading = false);
-      return;
-    }
-    LoginModel loginModel = LoginModel(
-      email: _emailController.text,
-      password: _passwordController.text,
-    );
     try {
-      // Check if it's admin login
-      debugPrint("Checking admin login");
-      debugPrint("Email: ${loginModel.email}");
-      debugPrint("Password: ${loginModel.password}");
-      if (loginModel.email == 'admin@watchhub.com' &&
-          loginModel.password == 'admin123') {
-        await _auth.adminLogin(loginModel, _rememberMe);
-        debugPrint("Admin login successful");
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, '/admin_home');
-        }
-      } else {
-        final User? user = await _auth.login(loginModel, _rememberMe);
-        debugPrint("User login successful");
-        if (user != null) {
-          if (mounted) {
-            Navigator.pushReplacementNamed(context, '/user_home');
+      final email = _emailController.text.trim();
+      final password = _passwordController.text;
+
+      // Validation
+      if (email.isEmpty || password.isEmpty) {
+        _showSnackBar('Please fill in all fields');
+        return;
+      }
+
+      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
+        _showSnackBar('Invalid email format');
+        return;
+      }
+
+      LoginModel loginModel = LoginModel(email: email, password: password);
+
+      // Admin login check
+      if (email == 'admin@watchhub.com' && password == 'admin123') {
+        await _auth.adminLogin(context, loginModel, _rememberMe);
+        if (mounted) Navigator.pushReplacementNamed(context, '/admin_home');
+      }
+      // Regular user login
+      else {
+        final User? user = await _auth.login(context, loginModel, _rememberMe);
+        if (user != null && mounted) {
+          if (user.emailVerified) {
+            Navigator.pushReplacementNamed(context, '/user_index');
+          } else {
+            showSnackBar(
+              context,
+              "Please verify your email to complete the registration",
+              type: SnackBarType.info,
+            );
           }
+        } else {
+          _showSnackBar(
+            'Login failed. Please check your credentials.',
+            isError: true,
+          );
         }
       }
-    } on FirebaseAuthException catch (e) {
-      final errorMessage = _getFriendlyError(e.code);
-      _showSnackBar(errorMessage);
-      setState(() => _isLoading = false);
+    } catch (e) {
+      _showSnackBar(
+        'An error occurred during login: ${e.toString()}',
+        isError: true,
+      );
+      _getFriendlyError(e.toString());
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

@@ -1,9 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:watch_hub/components/snackbar.component.dart';
 import 'package:watch_hub/models/login.model.dart';
 import 'package:watch_hub/models/signup.model.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:developer' as dev;
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -31,41 +35,54 @@ class AuthService {
         return user;
       }
     } catch (e) {
-      print("Signup Error: $e");
+      dev.log("Signup Error: $e");
       rethrow;
     }
     return null;
   }
 
   // Login
-  Future<User?> login(LoginModel loginModel, bool rememberMe) async {
-    debugPrint("Login Model: $loginModel");
+  Future<User?> login(
+    BuildContext context,
+    LoginModel loginModel,
+    bool rememberMe,
+  ) async {
     try {
-      await _auth.setPersistence(
-        rememberMe ? Persistence.LOCAL : Persistence.SESSION,
-      );
-
+      // First set persistence
+      if (kIsWeb) {
+        await _auth.setPersistence(
+          rememberMe ? Persistence.LOCAL : Persistence.SESSION,
+        );
+      }
+      // Then sign in
       final UserCredential userCredential = await _auth
           .signInWithEmailAndPassword(
             email: loginModel.email,
             password: loginModel.password,
           );
-
+      // Save rememberMe preference
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setBool('rememberMe', rememberMe);
-
       return userCredential.user;
     } catch (e) {
       debugPrint("Login Error: $e");
-      rethrow;
+      return null;
     }
   }
 
-  Future<User?> adminLogin(LoginModel loginModel, bool rememberMe) async {
+  Future<User?> adminLogin(
+    BuildContext context,
+    LoginModel loginModel,
+    bool rememberMe,
+  ) async {
     try {
-      await _auth.setPersistence(
-        rememberMe ? Persistence.LOCAL : Persistence.SESSION,
-      );
+      debugPrint("Before persistence setting");
+      if (kIsWeb) {
+        await _auth.setPersistence(
+          rememberMe ? Persistence.LOCAL : Persistence.SESSION,
+        );
+      }
+      debugPrint("After persistence setting");
       debugPrint("Admin Login Model: $loginModel");
       // Fixed admin credentials
       const String adminEmail = 'admin@watchhub.com';
@@ -88,11 +105,16 @@ class AuthService {
     return null;
   }
 
-  Future<void> logout() async {
+  Future<void> logout(BuildContext context) async {
     await _auth.signOut();
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('rememberMe');
     await prefs.remove('isAdmin');
+    showSnackBar(
+      context,
+      'Logged out successfully',
+      type: SnackBarType.success,
+    );
   }
 
   // Get current user

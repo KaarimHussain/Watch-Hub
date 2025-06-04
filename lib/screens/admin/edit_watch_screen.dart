@@ -22,6 +22,18 @@ class _EditWatchScreenState extends State<EditWatchScreen> {
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _stockCountController = TextEditingController();
+  final TextEditingController _modelController = TextEditingController();
+  final TextEditingController _movementTypeController = TextEditingController();
+  final TextEditingController _caseMaterialController = TextEditingController();
+  final TextEditingController _diameterController = TextEditingController();
+  final TextEditingController _thicknessController = TextEditingController();
+  final TextEditingController _bandMaterialController = TextEditingController();
+  final TextEditingController _bandWidthController = TextEditingController();
+  final TextEditingController _weightController = TextEditingController();
+  final TextEditingController _warrantyController = TextEditingController();
+  final TextEditingController _specialFeatureController =
+      TextEditingController();
+  bool _isWaterResistant = false;
 
   final List<String> categoryList = [
     'Classic',
@@ -43,16 +55,25 @@ class _EditWatchScreenState extends State<EditWatchScreen> {
     _stockCountController.text = widget.watch.stockCount.toString();
     dropdownValue = widget.watch.category;
     _selectedImage = base64Decode(widget.watch.imageUrl);
+    _modelController.text = widget.watch.model;
+    _movementTypeController.text = widget.watch.movementType;
+    _caseMaterialController.text = widget.watch.caseMaterial;
+    _diameterController.text = widget.watch.diameter.toString();
+    _thicknessController.text = widget.watch.thickness.toString();
+    _bandMaterialController.text = widget.watch.bandMaterial;
+    _bandWidthController.text = widget.watch.bandWidth.toString();
+    _weightController.text = widget.watch.weight.toString();
+    _warrantyController.text = widget.watch.warranty.toString();
+    _specialFeatureController.text = widget.watch.specialFeature;
+    _isWaterResistant = widget.watch.waterResistant;
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: const Color.fromARGB(255, 40, 40, 40),
-        title: const Text('Edit Watch', style: TextStyle(color: Colors.white)),
-      ),
+      appBar: AppBar(title: const Text('Edit Watch')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -65,8 +86,7 @@ class _EditWatchScreenState extends State<EditWatchScreen> {
                         width: 150,
                         height: 150,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF111111),
-                          border: Border.all(color: Colors.grey),
+                          border: Border.all(color: theme.dividerColor),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: ClipRRect(
@@ -81,14 +101,13 @@ class _EditWatchScreenState extends State<EditWatchScreen> {
                         width: 150,
                         height: 150,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF111111),
-                          border: Border.all(color: Colors.grey),
+                          border: Border.all(color: theme.dividerColor),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             'Select Image',
-                            style: TextStyle(color: Colors.white),
+                            style: theme.textTheme.bodyMedium,
                           ),
                         ),
                       ),
@@ -107,6 +126,7 @@ class _EditWatchScreenState extends State<EditWatchScreen> {
               _descriptionController,
               'Description',
               Icons.description,
+              maxLines: 3,
             ),
             const SizedBox(height: 15),
             _buildTextField(
@@ -118,21 +138,88 @@ class _EditWatchScreenState extends State<EditWatchScreen> {
             const SizedBox(height: 15),
             _buildDropdown(),
             const SizedBox(height: 15),
+            _buildTextField(_modelController, 'Model', Icons.model_training),
+            const SizedBox(height: 15),
+            _buildTextField(
+              _movementTypeController,
+              'Movement Type',
+              Icons.settings,
+            ),
+            const SizedBox(height: 15),
+            _buildTextField(
+              _caseMaterialController,
+              'Case Material',
+              Icons.category,
+            ),
+            const SizedBox(height: 15),
+            _buildTextField(
+              _diameterController,
+              'Diameter (mm)',
+              Icons.straighten,
+              isNumber: true,
+            ),
+            const SizedBox(height: 15),
+            _buildTextField(
+              _thicknessController,
+              'Thickness (mm)',
+              Icons.compress,
+              isNumber: true,
+            ),
+            const SizedBox(height: 15),
+            _buildTextField(
+              _bandMaterialController,
+              'Band Material',
+              Icons.format_paint,
+            ),
+            const SizedBox(height: 15),
+            _buildTextField(
+              _bandWidthController,
+              'Band Width (mm)',
+              Icons.swap_horiz,
+              isNumber: true,
+            ),
+            const SizedBox(height: 15),
+            _buildTextField(
+              _weightController,
+              'Weight (g)',
+              Icons.line_weight,
+              isNumber: true,
+            ),
+            const SizedBox(height: 15),
+            _buildTextField(
+              _warrantyController,
+              'Warranty (months)',
+              Icons.verified_user,
+              isNumber: true,
+            ),
+            const SizedBox(height: 15),
+            _buildTextField(
+              _specialFeatureController,
+              'Special Features',
+              Icons.star,
+              maxLines: 3,
+            ),
+            const SizedBox(height: 15),
+            Row(
+              children: [
+                Text("Water Resistant", style: theme.textTheme.bodyMedium),
+                Switch(
+                  value: _isWaterResistant,
+                  onChanged: (value) {
+                    setState(() => _isWaterResistant = value);
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _updateProduct,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
                 child:
                     _isLoading
-                        ? const CircularProgressIndicator(color: Colors.black)
+                        ? const CircularProgressIndicator()
                         : const Text(
                           'Update Watch',
                           style: TextStyle(
@@ -153,48 +240,31 @@ class _EditWatchScreenState extends State<EditWatchScreen> {
     String hint,
     IconData icon, {
     bool isNumber = false,
+    int maxLines = 1,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF111111),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF333333)),
-      ),
-      child: TextField(
-        controller: controller,
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          suffixIcon: Icon(icon, color: Colors.white),
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade600),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
-          ),
-        ),
-        keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      ),
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+      decoration: InputDecoration(suffixIcon: Icon(icon), hintText: hint),
     );
   }
 
   Widget _buildDropdown() {
+    final theme = Theme.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
       decoration: BoxDecoration(
-        color: const Color(0xFF111111),
+        border: Border.all(color: theme.dividerColor),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF333333)),
       ),
       child: DropdownButton<String>(
         isExpanded: true,
         value: dropdownValue,
-        icon: const Icon(Icons.arrow_downward_rounded, color: Colors.white),
+        icon: Icon(Icons.arrow_downward_rounded),
         iconSize: 24,
         elevation: 16,
-        style: const TextStyle(color: Colors.white),
-        dropdownColor: const Color(0xFF111111),
-        borderRadius: BorderRadius.circular(12),
         underline: Container(height: 2, color: Colors.transparent),
         items:
             categoryList.map((String value) {
@@ -223,16 +293,36 @@ class _EditWatchScreenState extends State<EditWatchScreen> {
     final priceText = _priceController.text.trim();
     final description = _descriptionController.text.trim();
     final stockText = _stockCountController.text.trim();
+    final model = _modelController.text.trim();
+    final movementType = _movementTypeController.text.trim();
+    final caseMaterial = _caseMaterialController.text.trim();
+    final diameter = double.tryParse(_diameterController.text.trim()) ?? 0;
+    final thickness = double.tryParse(_thicknessController.text.trim()) ?? 0;
+    final bandMaterial = _bandMaterialController.text.trim();
+    final bandWidth = double.tryParse(_bandWidthController.text.trim()) ?? 0;
+    final weight = double.tryParse(_weightController.text.trim()) ?? 0;
+    final warranty = int.tryParse(_warrantyController.text.trim()) ?? 0;
+    final specialFeature = _specialFeatureController.text.trim();
 
     if (_selectedImage == null ||
         name.isEmpty ||
         priceText.isEmpty ||
         description.isEmpty ||
-        stockText.isEmpty) {
+        stockText.isEmpty ||
+        model.isEmpty ||
+        movementType.isEmpty ||
+        caseMaterial.isEmpty ||
+        diameter == 0 ||
+        thickness == 0 ||
+        bandMaterial.isEmpty ||
+        bandWidth == 0 ||
+        weight == 0 ||
+        warranty == 0 ||
+        specialFeature.isEmpty) {
       showSnackBar(
         context,
         "All fields and image are required!",
-        isError: true,
+        type: SnackBarType.error,
       );
       return;
     }
@@ -240,11 +330,15 @@ class _EditWatchScreenState extends State<EditWatchScreen> {
     double? price = double.tryParse(priceText);
     int? stock = int.tryParse(stockText);
     if (price == null || price <= 0) {
-      showSnackBar(context, "Enter a valid price.", isError: true);
+      showSnackBar(context, "Enter a valid price.", type: SnackBarType.error);
       return;
     }
     if (stock == null || stock < 0) {
-      showSnackBar(context, "Enter a valid stock count.", isError: true);
+      showSnackBar(
+        context,
+        "Enter a valid stock count.",
+        type: SnackBarType.error,
+      );
       return;
     }
 
@@ -257,6 +351,17 @@ class _EditWatchScreenState extends State<EditWatchScreen> {
       description: description,
       imageUrl: base64Encode(_selectedImage!),
       stockCount: stock,
+      model: model,
+      movementType: movementType,
+      caseMaterial: caseMaterial,
+      diameter: diameter,
+      thickness: thickness,
+      bandMaterial: bandMaterial,
+      bandWidth: bandWidth,
+      weight: weight,
+      warranty: warranty,
+      specialFeature: specialFeature,
+      waterResistant: _isWaterResistant,
     );
 
     try {
@@ -265,13 +370,21 @@ class _EditWatchScreenState extends State<EditWatchScreen> {
           .doc(widget.watch.id)
           .update(updatedWatch.toMap());
       if (mounted) {
-        showSnackBar(context, "Watch updated successfully!", isError: false);
+        showSnackBar(
+          context,
+          "Watch updated successfully!",
+          type: SnackBarType.success,
+        );
         Navigator.pop(context); // Optionally go back
       }
     } catch (e) {
       debugPrint(e.toString());
       if (mounted) {
-        showSnackBar(context, "Update failed. Try again.", isError: true);
+        showSnackBar(
+          context,
+          "Update failed. Try again.",
+          type: SnackBarType.error,
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
